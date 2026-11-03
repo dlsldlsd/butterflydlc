@@ -11,38 +11,64 @@
         :root { --bg: #0f0f13; --card-bg: #1a1a22; --text: #ffffff; --text-dim: #a0a0b0; --accent: #8b5cf6; --accent-hover: #7c3aed; --border: #2a2a35; --success: #10b981; --error: #ef4444; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Montserrat', sans-serif; background-color: var(--bg); color: var(--text); min-height: 100vh; background-image: radial-gradient(circle at 50% -20%, rgba(139, 92, 246, 0.15) 0%, transparent 50%); }
+        
         header { display: flex; justify-content: space-between; align-items: center; padding: 15px 50px; background: rgba(15, 15, 19, 0.8); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); }
-        .logo { font-size: 24px; font-weight: 800; display: flex; align-items: center; gap: 12px; }
+        .logo { font-size: 24px; font-weight: 800; display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text); }
         .logo span { color: var(--accent); }
         .logo-img { height: 40px; width: 40px; border-radius: 8px; }
+        
         .btn-logout { background: transparent; color: var(--text-dim); border: 1px solid var(--border); padding: 8px 16px; border-radius: 8px; cursor: pointer; transition: 0.3s; font-family: 'Montserrat', sans-serif; font-weight: 600; }
-        .btn-logout:hover { border-color: var(--error); color: var(--error); }
+        .btn-logout:hover { border-color: var(--accent); color: var(--accent); }
+
         .dashboard-container { max-width: 800px; margin: 60px auto; padding: 0 20px; }
         .profile-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 40px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
         .profile-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, var(--accent), var(--success)); }
+        
         .user-avatar { width: 80px; height: 80px; border-radius: 50%; background: var(--border); margin: 0 auto 20px; display: flex; justify-content: center; align-items: center; font-size: 32px; box-shadow: 0 0 20px rgba(139, 92, 246, 0.3); }
         .user-email { font-size: 20px; font-weight: 800; margin-bottom: 5px; }
         .user-id { font-size: 12px; color: var(--text-dim); margin-bottom: 30px; }
+        
         .status-box { background: var(--bg); border: 1px dashed var(--border); border-radius: 12px; padding: 20px; margin-bottom: 30px; }
         .status-title { font-size: 14px; color: var(--text-dim); margin-bottom: 5px; }
         .status-value { font-size: 24px; font-weight: 800; }
         .status-inactive { color: var(--error); }
         .status-active { color: var(--success); text-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
+        
         .btn-action { display: block; width: 100%; padding: 15px; border-radius: 8px; background: var(--accent); color: #fff; text-decoration: none; font-weight: 800; margin-bottom: 15px; transition: 0.3s; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3); border: none; cursor: pointer; font-family: 'Montserrat', sans-serif; font-size: 16px; }
         .btn-action:hover { background: var(--accent-hover); transform: translateY(-2px); }
         .btn-download { display: block; width: 100%; padding: 15px; border-radius: 8px; background: transparent; color: var(--text-dim); border: 1px solid var(--border); font-weight: 800; cursor: not-allowed; font-family: 'Montserrat', sans-serif; font-size: 16px; text-decoration: none; }
         .btn-download.active { background: var(--success); color: #fff; border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
         .btn-download.active:hover { transform: translateY(-2px); }
+
+        /* --- МОДАЛЬНЫЕ ОКНА --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 15, 19, 0.85); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: all 0.3s ease; z-index: 1000; }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-box { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 30px; text-align: center; max-width: 350px; width: 90%; transform: translateY(20px) scale(0.95); transition: all 0.3s ease; }
+        .modal-overlay.active .modal-box { transform: translateY(0) scale(1); }
+        
+        .modal-box h3 { font-size: 20px; margin-bottom: 10px; font-weight: 800; }
+        .modal-box p { font-size: 14px; color: var(--text-dim); margin-bottom: 20px; line-height: 1.5; }
+        
+        .modal-buttons { display: flex; flex-direction: column; gap: 10px; }
+        .btn-modal { width: 100%; padding: 12px; border-radius: 8px; font-weight: 800; font-family: 'Montserrat', sans-serif; font-size: 14px; cursor: pointer; transition: 0.3s; border: none; }
+        .btn-cancel { background: transparent; color: var(--text); border: 1px solid var(--border); }
+        .btn-cancel:hover { background: var(--border); }
+        .btn-danger { background: var(--error); color: #fff; }
+        .btn-danger:hover:not(:disabled) { background: #dc2626; box-shadow: 0 0 15px rgba(239, 68, 68, 0.5); }
+        .btn-danger:disabled { background: #4a1c1c; color: #888; cursor: not-allowed; }
+        
+        .input-otp { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--accent); font-size: 24px; font-weight: 800; text-align: center; letter-spacing: 8px; font-family: 'Montserrat', sans-serif; }
+        .input-otp:focus { outline: none; border-color: var(--accent); }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="logo">
+        <a href="/" class="logo">
             <img src="logo.png" alt="Logo" class="logo-img">
             Butterfly <span>DLC</span>
-        </div>
-        <button class="btn-logout" id="logout-btn">Выйти</button>
+        </a>
+        <button class="btn-logout" id="open-logout-btn">Выйти</button>
     </header>
 
     <div class="dashboard-container">
@@ -56,8 +82,49 @@
                 <div class="status-value status-inactive" id="sub-status">Не активна</div>
             </div>
 
-            <a href="index.html#pricing" class="btn-action">💳 Купить подписку</a>
+            <a href="/#pricing" class="btn-action">💳 Купить подписку</a>
             <a href="#" class="btn-download" id="download-btn">⬇️ Скачать лоадер (Нет подписки)</a>
+        </div>
+    </div>
+
+    <!-- МОДАЛКА 1: ПРОСТО ВЫХОД -->
+    <div class="modal-overlay" id="logout-modal">
+        <div class="modal-box">
+            <h3>Выход из аккаунта</h3>
+            <p>Вы точно хотите выйти?</p>
+            <div class="modal-buttons">
+                <button class="btn-modal btn-danger" id="confirm-logout-btn">Выйти</button>
+                <button class="btn-modal btn-cancel" onclick="closeModal('logout-modal')">Отмена</button>
+            </div>
+            <div style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 15px;">
+                <p style="font-size: 12px; margin-bottom: 10px;">Опасная зона</p>
+                <button class="btn-modal btn-cancel" style="color: var(--error); border-color: var(--error);" id="start-delete-btn">Удалить аккаунт</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛКА 2: ПОДТВЕРЖДЕНИЕ УДАЛЕНИЯ (КОД) -->
+    <div class="modal-overlay" id="reauth-modal">
+        <div class="modal-box">
+            <h3>Подтверждение</h3>
+            <p>Мы отправили код на вашу почту. Введите его, чтобы подтвердить удаление.</p>
+            <input type="text" id="delete-otp-code" class="input-otp" placeholder="00000000" maxlength="8">
+            <div class="modal-buttons">
+                <button class="btn-modal btn-danger" id="verify-delete-btn">Подтвердить</button>
+                <button class="btn-modal btn-cancel" onclick="closeModal('reauth-modal')">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛКА 3: ФИНАЛЬНОЕ УДАЛЕНИЕ (ТАЙМЕР) -->
+    <div class="modal-overlay" id="final-delete-modal">
+        <div class="modal-box" style="border-color: var(--error);">
+            <h3 style="color: var(--error);">Удалить аккаунт?</h3>
+            <p>Это действие <b>необратимо</b>. Все ваши данные и подписки будут удалены навсегда.</p>
+            <div class="modal-buttons">
+                <button class="btn-modal btn-danger" id="final-delete-btn" disabled>Удалить (5)</button>
+                <button class="btn-modal btn-cancel" onclick="closeModal('final-delete-modal')">Отмена</button>
+            </div>
         </div>
     </div>
 
@@ -65,40 +132,122 @@
     <script>
         const SUPABASE_URL = 'https://kkdpwgndorwibvqabvrw.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_wIvuDu1iHn7sPfa1ojhiQA_gxF6acmX';
-        
-        // ИСПРАВЛЕНО
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        async function checkUser() {
-            // ИСПРАВЛЕНО: используем supabaseClient
-            const { data: { session }, error } = await supabaseClient.auth.getSession();
+        let currentEmail = '';
 
+        // Функции для работы с модалками
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        // 1. Проверка входа
+        async function checkUser() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
             if (!session) {
-                window.location.href = 'login.html';
+                window.location.href = '/login'; // Уводим на чистую ссылку
                 return;
             }
-
-            const user = session.user;
-            document.getElementById('user-email').innerText = user.email;
-            document.getElementById('user-id').innerText = 'ID: ' + user.id.split('-')[0] + '...';
-
-            const testEmail = "твой_email@mail.ru"; // Не забудь вписать свою почту для теста
-            if (user.email.includes('admin') || user.email === testEmail) {
-                const statusEl = document.getElementById('sub-status');
-                statusEl.innerText = 'Активна (Навсегда)';
-                statusEl.className = 'status-value status-active';
-                
-                const dlBtn = document.getElementById('download-btn');
-                dlBtn.innerText = '⬇️ Скачать лоадер';
-                dlBtn.className = 'btn-download active';
-                dlBtn.href = '#'; 
+            currentEmail = session.user.email;
+            document.getElementById('user-email').innerText = currentEmail;
+            document.getElementById('user-id').innerText = 'ID: ' + session.user.id.split('-')[0] + '...';
+            
+            // Тут проверка подписки (оставил как было для теста)
+            if (currentEmail.includes('admin')) {
+                document.getElementById('sub-status').innerText = 'Активна (Навсегда)';
+                document.getElementById('sub-status').className = 'status-value status-active';
+                const dl = document.getElementById('download-btn');
+                dl.innerText = '⬇️ Скачать лоадер';
+                dl.className = 'btn-download active';
+                dl.href = '#';
             }
         }
 
-        document.getElementById('logout-btn').addEventListener('click', async () => {
-            // ИСПРАВЛЕНО
+        // 2. Открытие окна выхода
+        document.getElementById('open-logout-btn').addEventListener('click', () => {
+            openModal('logout-modal');
+        });
+
+        // 3. Кнопка "Выйти"
+        document.getElementById('confirm-logout-btn').addEventListener('click', async () => {
             await supabaseClient.auth.signOut();
-            window.location.href = 'index.html';
+            window.location.href = '/';
+        });
+
+        // 4. Кнопка "Удалить аккаунт" (Запуск Reauth)
+        document.getElementById('start-delete-btn').addEventListener('click', async () => {
+            closeModal('logout-modal');
+            
+            // Отправляем код на почту для подтверждения
+            const { error } = await supabaseClient.auth.reauthenticate();
+            if (error) {
+                alert("Ошибка отправки кода: " + error.message);
+            } else {
+                openModal('reauth-modal');
+            }
+        });
+
+        // 5. Проверка кода Reauth
+        document.getElementById('verify-delete-btn').addEventListener('click', async () => {
+            const code = document.getElementById('delete-otp-code').value.trim();
+            const btn = document.getElementById('verify-delete-btn');
+            
+            if (!code) return alert("Введите код!");
+            
+            btn.innerText = 'Проверка...';
+            btn.disabled = true;
+
+            const { data, error } = await supabaseClient.auth.verifyOtp({
+                email: currentEmail,
+                token: code,
+                type: 'reauthentication' // Важно! Тип для переподтверждения
+            });
+
+            if (error) {
+                alert("Неверный код: " + error.message);
+                btn.innerText = 'Подтвердить';
+                btn.disabled = false;
+            } else {
+                closeModal('reauth-modal');
+                openModal('final-delete-modal');
+                startDeleteTimer(); // Запускаем таймер
+            }
+        });
+
+        // 6. Таймер на 5 секунд для финального удаления
+        function startDeleteTimer() {
+            const btn = document.getElementById('final-delete-btn');
+            let timeLeft = 5;
+            btn.innerText = `Удалить (${timeLeft})`;
+            btn.disabled = true;
+
+            const interval = setInterval(() => {
+                timeLeft--;
+                if (timeLeft > 0) {
+                    btn.innerText = `Удалить (${timeLeft})`;
+                } else {
+                    clearInterval(interval);
+                    btn.innerText = 'Удалить навсегда';
+                    btn.disabled = false; // Разблокировали
+                }
+            }, 1000);
+        }
+
+        // 7. Финальное удаление (Вызов Edge Function)
+        document.getElementById('final-delete-btn').addEventListener('click', async () => {
+            const btn = document.getElementById('final-delete-btn');
+            btn.innerText = 'Удаление...';
+            
+            // Вызываем защищенную функцию на серверах Supabase
+            const { data, error } = await supabaseClient.functions.invoke('delete-user');
+            
+            if (error) {
+                alert("Ошибка при удалении: " + error.message);
+                btn.innerText = 'Удалить навсегда';
+            } else {
+                alert("Аккаунт успешно удален.");
+                await supabaseClient.auth.signOut();
+                window.location.href = '/';
+            }
         });
 
         checkUser();
