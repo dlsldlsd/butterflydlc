@@ -92,7 +92,7 @@
     <script>
         const SUPABASE_URL = 'https://kkdpwgndorwibvqabvrw.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_wIvuDu1iHn7sPfa1ojhiQA_gxF6acmX';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
