@@ -43,7 +43,7 @@
             border-bottom: 1px solid var(--border);
         }
 
-        .logo { font-size: 24px; font-weight: 800; letter-spacing: 1px; display: flex; align-items: center; gap: 12px; }
+        .logo { font-size: 24px; font-weight: 800; letter-spacing: 1px; display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text); }
         .logo span { color: var(--accent); }
         .logo-img { height: 40px; width: 40px; border-radius: 8px; object-fit: cover; box-shadow: 0 0 10px rgba(139, 92, 246, 0.4); }
         .nav-buttons { display: flex; gap: 15px; }
@@ -110,7 +110,7 @@
             header { padding: 15px 20px; }
             .hero h1 { font-size: 40px; }
             .hero-buttons { flex-direction: column; width: 100%; max-width: 300px; }
-            .nav-buttons .btn { padding: 8px 16px; font-size: 12px; }
+            .nav-buttons .btn { padding: 8px 12px; font-size: 12px; }
             .logo { font-size: 18px; }
             .logo-img { height: 30px; width: 30px; }
             .pricing-grid { grid-template-columns: 1fr; }
@@ -120,13 +120,14 @@
 <body>
 
     <header>
-        <div class="logo">
+        <a href="/" class="logo">
             <img src="logo.png" alt="Logo" class="logo-img">
             Butterfly <span>DLC</span>
-        </div>
-        <div class="nav-buttons">
-            <!-- ТЕПЕРЬ КНОПКА ВЕДЕТ НА ОТДЕЛЬНУЮ СТРАНИЦУ login.html -->
-            <a href="login.html" class="btn btn-outline">Войти</a>
+        </a>
+        <!-- Кнопки теперь будут генерироваться скриптом в зависимости от входа -->
+        <div class="nav-buttons" id="auth-buttons">
+            <!-- Заглушка, пока скрипт не загрузился -->
+            <a href="/login" class="btn btn-outline">Войти</a>
             <a href="#pricing" class="btn btn-primary">Купить</a>
         </div>
     </header>
@@ -160,7 +161,33 @@
         <p style="margin-top: 10px; font-size: 12px;">Нажимая кнопку «Оформить», вы соглашаетесь с условиями предоставления услуг.</p>
     </footer>
 
+    <!-- Подключаем Supabase для проверки входа -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        // --- 1. ПРОВЕРКА АВТОРИЗАЦИИ ---
+        const supabaseClient = supabase.createClient('https://kkdpwgndorwibvqabvrw.supabase.co', 'sb_publishable_wIvuDu1iHn7sPfa1ojqiQA_gxF6acmX');
+
+        async function updateHeader() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            const container = document.getElementById('auth-buttons');
+
+            if (session) {
+                // Если вошел — показываем почту, которая ведет в /dashboard
+                container.innerHTML = `
+                    <a href="/dashboard" class="btn btn-outline" style="border-color: var(--accent); color: var(--accent); font-weight: 800;">👤 ${session.user.email}</a>
+                    <a href="#pricing" class="btn btn-primary">Купить</a>
+                `;
+            } else {
+                // Если не вошел — кнопка Войти ведет на /login
+                container.innerHTML = `
+                    <a href="/login" class="btn btn-outline">Войти</a>
+                    <a href="#pricing" class="btn btn-primary">Купить</a>
+                `;
+            }
+        }
+        updateHeader();
+
+        // --- 2. ЗАГРУЗКА ТАРИФОВ ИЗ JSON ---
         fetch('data.json')
             .then(response => response.json())
             .then(data => {
