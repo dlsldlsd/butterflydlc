@@ -1,0 +1,56 @@
+{
+  "versions": [
+    { "name": "1.21.4", "status": "active" },
+    { "name": "1.21.11", "status": "soon" }
+  ],
+  "pricing": [
+    {
+      "version": "1.21.4",
+      "period": "месяц",
+      "price": 199,
+      "features": [
+        "Доступ ко всем модулям",
+        "Обновления в течение срока",
+        "Базовая поддержка"
+      ],
+      "isPopular": false,
+      "isBeta": false
+    },
+    {
+      "version": "1.21.4",
+      "period": "год",
+      "price": 350,
+      "features": [
+        "Доступ ко всем модулям",
+        "Обновления в течение срока",
+        "Базовая поддержка"
+      ],
+      "isPopular": true,
+      "isBeta": false
+    },
+    {
+      "version": "1.21.4",
+      "period": "навсегда",
+      "price": 500,
+      "features": [
+        "Доступ ко всем модулям",
+        "Обновления в течение срока",
+        "Базовая поддержка"
+      ],
+      "isPopular": false,
+      "isBeta": false
+    },
+    {
+      "version": "1.21.11",
+      "period": "beta",
+      "price": 800,
+      "features": [
+        "Доступ ко всем модулям бета",
+        "Обновления почти каждый день",
+        "Быстрая поддержка"
+      ],
+      "isPopular": true,
+      "isBeta": true
+    }
+  ]
+}
