@@ -6,8 +6,6 @@
     <title>Регистрация — Butterfly DLC</title>
     <link rel="icon" type="image/png" href="logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
-    
-    <!-- Скрипт капчи Cloudflare -->
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     
     <style>
@@ -24,7 +22,7 @@
         .otp-input { font-size: 28px !important; letter-spacing: 10px; text-align: center; color: var(--accent) !important; font-weight: 800; padding: 15px 10px !important; }
         .cf-turnstile { display: flex; justify-content: center; margin: 20px 0; }
         .btn-submit { width: 100%; padding: 14px; border-radius: 8px; background: var(--accent); color: #fff; border: none; font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 16px; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3); display: flex; justify-content: center; align-items: center; gap: 10px; }
-        .btn-submit:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5); }
+        .btn-submit:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-2px); }
         .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
         .spinner { display: none; width: 18px; height: 18px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -38,7 +36,6 @@
         .hidden { display: none !important; }
         .subtitle { font-size: 13px; color: var(--text-dim); margin-bottom: 25px; }
         .subtitle strong { color: var(--accent); }
-        /* Модалка */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 15, 19, 0.85); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: all 0.3s ease; z-index: 1000; }
         .modal-overlay.active { opacity: 1; visibility: visible; }
         .modal-content { background: var(--card-bg); border: 1px solid var(--success); border-radius: 16px; padding: 40px; text-align: center; max-width: 350px; width: 90%; transform: translateY(20px) scale(0.95); transition: all 0.3s ease; }
@@ -53,7 +50,6 @@
     <div class="login-container">
         <img src="logo.png" alt="Logo" class="logo-img">
         
-        <!-- ЭТАП 1: ВВОД ДАННЫХ -->
         <div id="step-register">
             <h2>Создать аккаунт</h2>
             <form id="form-register">
@@ -70,7 +66,6 @@
                     <input type="password" id="password-confirm" placeholder="••••••••" minlength="6" required>
                 </div>
 
-                <!-- Виджет капчи -->
                 <div class="cf-turnstile" data-sitekey="0x4AAAAAAFyCFRaexblhfbXL" data-theme="dark"></div>
                 
                 <div class="error-msg" id="error-msg">Ошибка регистрации.</div>
@@ -86,7 +81,6 @@
             </div>
         </div>
 
-        <!-- ЭТАП 2: ВВОД КОДА ИЗ ПИСЬМА -->
         <div id="step-verify" class="hidden">
             <h2>Подтвердите почту</h2>
             <p class="subtitle">Код отправлен на <strong id="user-email-display"></strong></p>
@@ -121,11 +115,12 @@
     <script>
         const SUPABASE_URL = 'https://kkdpwgndorwibvqabvrw.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_wIvuDu1iHn7sPfa1ojhiQA_gxF6acmX';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        // ИСПРАВЛЕНО
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let regEmail = '';
 
-        // ЭТАП 1: Отправка данных для регистрации
         document.getElementById('form-register').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value.trim().toLowerCase();
@@ -138,14 +133,12 @@
 
             errorMsg.classList.remove('show');
 
-            // Проверка паролей
             if (pass !== passConfirm) {
                 errorMsg.innerText = 'Пароли не совпадают!';
                 errorMsg.classList.add('show');
                 return;
             }
 
-            // ПОЛУЧАЕМ ТОКЕН КАПЧИ
             const captchaToken = document.querySelector('[name="cf-turnstile-response"]').value;
             if (!captchaToken) {
                 errorMsg.innerText = 'Пожалуйста, пройдите проверку на робота.';
@@ -159,13 +152,11 @@
 
             regEmail = email;
 
-            // Вызываем регистрацию с паролем и передаем капчу
-            const { data, error } = await supabase.auth.signUp({
+            // ИСПРАВЛЕНО: используем supabaseClient
+            const { data, error } = await supabaseClient.auth.signUp({
                 email: email,
                 password: pass,
-                options: {
-                    captchaToken: captchaToken // Передаем токен в Supabase
-                }
+                options: { captchaToken: captchaToken }
             });
 
             if (error) {
@@ -174,11 +165,8 @@
                 btnText.innerText = 'Зарегистрироваться';
                 spinner.style.display = 'none';
                 btn.disabled = false;
-                
-                // Сбрасываем капчу для повторной попытки
                 if (window.turnstile) window.turnstile.reset();
             } else {
-                // Переключаем на ввод кода
                 document.getElementById('user-email-display').innerText = email;
                 document.getElementById('step-register').classList.add('hidden');
                 document.getElementById('step-verify').classList.remove('hidden');
@@ -186,7 +174,6 @@
             }
         });
 
-        // ЭТАП 2: Проверка кода
         document.getElementById('form-verify').addEventListener('submit', async (e) => {
             e.preventDefault();
             const token = document.getElementById('otp-code').value.trim();
@@ -200,8 +187,8 @@
             spinner.style.display = 'block';
             btn.disabled = true;
 
-            // Подтверждаем код
-            const { data, error } = await supabase.auth.verifyOtp({
+            // ИСПРАВЛЕНО
+            const { data, error } = await supabaseClient.auth.verifyOtp({
                 email: regEmail,
                 token: token,
                 type: 'signup'
@@ -214,17 +201,16 @@
                 spinner.style.display = 'none';
                 btn.disabled = false;
             } else {
-                // Успех! 
                 document.getElementById('success-modal').classList.add('active');
                 setTimeout(() => {
-                    supabase.auth.signOut().then(() => {
+                    // ИСПРАВЛЕНО
+                    supabaseClient.auth.signOut().then(() => {
                         window.location.href = 'login.html'; 
                     });
                 }, 2500);
             }
         });
 
-        // Кнопка "Назад"
         document.getElementById('btn-back').addEventListener('click', () => {
             document.getElementById('step-verify').classList.add('hidden');
             document.getElementById('step-register').classList.remove('hidden');
