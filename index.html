@@ -147,27 +147,21 @@
 
     <section class="versions" id="versions">
         <h2 class="section-title">Поддерживаемые версии</h2>
-        <div class="version-grid" id="versionGrid">
-            <!-- Сюда сайт сам вставит версии из JSON -->
-        </div>
+        <div class="version-grid" id="versionGrid"></div>
         <p style="text-align: center; color: var(--text-dim); margin-top: 20px; font-size: 14px;">* Список функций доступен в личном кабинете после активации.</p>
     </section>
 
     <section class="pricing" id="pricing">
         <h2 class="section-title">Тарифы подписки</h2>
-        <div class="pricing-grid" id="pricingGrid">
-            <!-- Сюда сайт сам вставит тарифы из JSON -->
-        </div>
+        <div class="pricing-grid" id="pricingGrid"></div>
     </section>
 
     <footer>
-        <!-- БАННЕР -->
         <div class="footer-banner">
             <a href="https://duckgo.io" title="medium_2" target="_blank" rel="noopener noreferrer">
                 <img src="https://cdn.duckgo.io/images/logos/banners/medium_2.png" alt="medium_2" />
             </a>
         </div>
-
         <p>© 2026 Butterfly DLC. Все права защищены.</p>
         <p style="margin-top: 10px; font-size: 12px;">Нажимая кнопку «Оформить», вы соглашаетесь с условиями предоставления услуг.</p>
     </footer>
@@ -176,7 +170,6 @@
     <script>
         const supabaseClient = supabase.createClient('https://kkdpwgndorwibvqabvrw.supabase.co', 'sb_publishable_wIvuDu1iHn7sPfa1ojqiQA_gxF6acmX');
 
-        // 1. Обновление шапки (кнопка Войти / Почта)
         async function updateHeader() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             const container = document.getElementById('auth-buttons');
@@ -195,11 +188,9 @@
         }
         updateHeader();
 
-        // 2. Загрузка тарифов и версий из JSON
         fetch('data.json')
             .then(response => response.json())
             .then(data => {
-                // Рисуем версии
                 const versionGrid = document.getElementById('versionGrid');
                 data.versions.forEach(v => {
                     const isSoon = v.status === 'soon';
@@ -212,7 +203,6 @@
                     versionGrid.appendChild(card);
                 });
 
-                // Рисуем тарифы
                 const pricingGrid = document.getElementById('pricingGrid');
                 data.pricing.forEach(p => {
                     const popularClass = p.isPopular ? 'popular' : '';
@@ -227,7 +217,6 @@
                     const card = document.createElement('div');
                     card.className = `pricing-card ${popularClass} ${betaClass}`;
                     
-                    // ИЗМЕНЕНО: вместо <a> теперь <button> с классом buy-btn и data-price
                     card.innerHTML = `
                         ${badgeHtml}
                         <h3>${p.version} <span>/ ${p.period}</span></h3>
@@ -237,7 +226,6 @@
                     `;
                     pricingGrid.appendChild(card);
 
-                    // ДОБАВЛЕНО: обработчик клика на кнопку оплаты
                     card.querySelector('.buy-btn').addEventListener('click', async (e) => {
                         const btn = e.target;
                         const originalText = btn.innerText;
@@ -245,19 +233,17 @@
                         btn.innerText = 'Загрузка...';
                         btn.disabled = true;
 
-                        // Проверяем, вошел ли пользователь
                         const { data: { session } } = await supabaseClient.auth.getSession();
                         
                         if (!session) {
-                            // Если не вошел, кидаем на страницу логина
                             window.location.href = '/login';
                             return;
                         }
 
                         const amount = btn.getAttribute('data-price');
-                        const orderId = Math.floor(Math.random() * 100000000); // Генерируем ID заказа
+                        const orderId = Math.floor(Math.random() * 100000000);
 
-                        // Вызываем Edge Function для создания ссылки
+                        // Вызываем функцию (без лишних заголовков, чтобы не ломать авторизацию)
                         const { data, error } = await supabaseClient.functions.invoke('create-payment', {
                             body: { 
                                 email: session.user.email, 
@@ -271,7 +257,6 @@
                             btn.innerText = originalText;
                             btn.disabled = false;
                         } else {
-                            // Перенаправляем на DuckGo
                             window.location.href = data.url;
                         }
                     });
