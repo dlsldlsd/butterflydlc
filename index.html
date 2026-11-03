@@ -6,6 +6,17 @@
     <title>Butterfly DLC — Client</title>
     <link rel="icon" type="image/png" href="logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <form id="login-form">
+    <!-- Поля для логина и пароля -->
+    <input type="text" placeholder="Логин" required>
+    <input type="password" placeholder="Пароль" required>
+
+    <!-- Виджет Turnstile -->
+    <div class="cf-turnstile" data-sitekey="ТВОЙ_SITE_KEY" data-theme="dark"></div>
+
+    <button type="submit">Войти</button>
+    </form    
     <style>
         :root {
             --bg: #0f0f13;
