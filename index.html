@@ -51,7 +51,7 @@
         .btn {
             padding: 10px 24px; border-radius: 8px; font-family: 'Montserrat', sans-serif;
             font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.3s ease;
-            border: none; text-decoration: none; display: inline-block;
+            border: none; text-decoration: none; display: inline-block; text-align: center;
         }
         .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
         .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
@@ -161,7 +161,7 @@
     </section>
 
     <footer>
-        <!-- НОВЫЙ БАННЕР (medium_2) -->
+        <!-- БАННЕР -->
         <div class="footer-banner">
             <a href="https://duckgo.io" title="medium_2" target="_blank" rel="noopener noreferrer">
                 <img src="https://cdn.duckgo.io/images/logos/banners/medium_2.png" alt="medium_2" />
@@ -176,6 +176,7 @@
     <script>
         const supabaseClient = supabase.createClient('https://kkdpwgndorwibvqabvrw.supabase.co', 'sb_publishable_wIvuDu1iHn7sPfa1ojqiQA_gxF6acmX');
 
+        // 1. Обновление шапки (кнопка Войти / Почта)
         async function updateHeader() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             const container = document.getElementById('auth-buttons');
@@ -194,9 +195,11 @@
         }
         updateHeader();
 
+        // 2. Загрузка тарифов и версий из JSON
         fetch('data.json')
             .then(response => response.json())
             .then(data => {
+                // Рисуем версии
                 const versionGrid = document.getElementById('versionGrid');
                 data.versions.forEach(v => {
                     const isSoon = v.status === 'soon';
@@ -209,6 +212,7 @@
                     versionGrid.appendChild(card);
                 });
 
+                // Рисуем тарифы
                 const pricingGrid = document.getElementById('pricingGrid');
                 data.pricing.forEach(p => {
                     const popularClass = p.isPopular ? 'popular' : '';
@@ -222,14 +226,55 @@
 
                     const card = document.createElement('div');
                     card.className = `pricing-card ${popularClass} ${betaClass}`;
+                    
+                    // ИЗМЕНЕНО: вместо <a> теперь <button> с классом buy-btn и data-price
                     card.innerHTML = `
                         ${badgeHtml}
                         <h3>${p.version} <span>/ ${p.period}</span></h3>
                         <div class="price">${p.price} <span>₽</span></div>
                         <ul class="features">${featuresHtml}</ul>
-                        <a href="#" class="btn ${btnClass}">Оформить</a>
+                        <button class="btn ${btnClass} buy-btn" data-price="${p.price}">Оформить</button>
                     `;
                     pricingGrid.appendChild(card);
+
+                    // ДОБАВЛЕНО: обработчик клика на кнопку оплаты
+                    card.querySelector('.buy-btn').addEventListener('click', async (e) => {
+                        const btn = e.target;
+                        const originalText = btn.innerText;
+                        
+                        btn.innerText = 'Загрузка...';
+                        btn.disabled = true;
+
+                        // Проверяем, вошел ли пользователь
+                        const { data: { session } } = await supabaseClient.auth.getSession();
+                        
+                        if (!session) {
+                            // Если не вошел, кидаем на страницу логина
+                            window.location.href = '/login';
+                            return;
+                        }
+
+                        const amount = btn.getAttribute('data-price');
+                        const orderId = Math.floor(Math.random() * 100000000); // Генерируем ID заказа
+
+                        // Вызываем Edge Function для создания ссылки
+                        const { data, error } = await supabaseClient.functions.invoke('create-payment', {
+                            body: { 
+                                email: session.user.email, 
+                                amount: amount, 
+                                orderId: orderId 
+                            }
+                        });
+
+                        if (error) {
+                            alert("Ошибка создания платежа: " + error.message);
+                            btn.innerText = originalText;
+                            btn.disabled = false;
+                        } else {
+                            // Перенаправляем на DuckGo
+                            window.location.href = data.url;
+                        }
+                    });
                 });
             })
             .catch(error => {

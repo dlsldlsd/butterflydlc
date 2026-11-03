@@ -136,29 +136,51 @@
 
         let currentEmail = '';
 
-        // Функции для работы с модалками
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-        // 1. Проверка входа
+        // 1. Проверка входа и ЗАГРУЗКА ПОДПИСКИ ИЗ БАЗЫ
         async function checkUser() {
             const { data: { session } } = await supabaseClient.auth.getSession();
-            if (!session) {
-                window.location.href = '/login'; // Уводим на чистую ссылку
-                return;
-            }
-            currentEmail = session.user.email;
-            document.getElementById('user-email').innerText = currentEmail;
-            document.getElementById('user-id').innerText = 'ID: ' + session.user.id.split('-')[0] + '...';
+            if (!session) { window.location.href = '/login'; return; }
+
+            const user = session.user;
+            currentEmail = user.email;
             
-            // Тут проверка подписки (оставил как было для теста)
-            if (currentEmail.includes('admin')) {
-                document.getElementById('sub-status').innerText = 'Активна (Навсегда)';
-                document.getElementById('sub-status').className = 'status-value status-active';
-                const dl = document.getElementById('download-btn');
-                dl.innerText = '⬇️ Скачать лоадер';
-                dl.className = 'btn-download active';
-                dl.href = '#';
+            document.getElementById('user-email').innerText = currentEmail;
+            document.getElementById('user-id').innerText = 'ID: ' + user.id.split('-')[0] + '...';
+
+            // ДЕЛАЕМ ЗАПРОС К ТАБЛИЦЕ PROFILES
+            const { data: profile, error } = await supabaseClient
+                .from('profiles')
+                .select('subscription, subscription_end')
+                .eq('email', currentEmail)
+                .maybeSingle();
+
+            if (profile && profile.subscription === 'active') {
+                let isActive = true;
+                
+                // Проверяем дату окончания, если она есть
+                if (profile.subscription_end) {
+                    const endDate = new Date(profile.subscription_end);
+                    const now = new Date();
+                    if (endDate < now) {
+                        isActive = false; // Подписка истекла
+                    }
+                }
+
+                if (isActive) {
+                    document.getElementById('sub-status').innerText = 'Активна';
+                    document.getElementById('sub-status').className = 'status-value status-active';
+                    
+                    const dl = document.getElementById('download-btn');
+                    dl.innerText = '⬇️ Скачать лоадер';
+                    dl.className = 'btn-download active';
+                    dl.href = '#'; // ЗДЕСЬ МОЖЕШЬ УКАЗАТЬ ПРЯМУЮ ССЫЛКУ НА СКАЧИВАНИЕ ФАЙЛА
+                } else {
+                    document.getElementById('sub-status').innerText = 'Не активна (Истекла)';
+                    document.getElementById('sub-status').className = 'status-value status-inactive';
+                }
             }
         }
 
@@ -176,8 +198,6 @@
         // 4. Кнопка "Удалить аккаунт" (Запуск Reauth)
         document.getElementById('start-delete-btn').addEventListener('click', async () => {
             closeModal('logout-modal');
-            
-            // Отправляем код на почту для подтверждения
             const { error } = await supabaseClient.auth.reauthenticate();
             if (error) {
                 alert("Ошибка отправки кода: " + error.message);
@@ -186,20 +206,17 @@
             }
         });
 
-        // 5. Проверка кода Reauth
+        // 5. Проверка кода Reauth (ИСПРАВЛЕНО НА updateUser)
         document.getElementById('verify-delete-btn').addEventListener('click', async () => {
             const code = document.getElementById('delete-otp-code').value.trim();
             const btn = document.getElementById('verify-delete-btn');
-            
             if (!code) return alert("Введите код!");
             
             btn.innerText = 'Проверка...';
             btn.disabled = true;
 
-            const { data, error } = await supabaseClient.auth.verifyOtp({
-                email: currentEmail,
-                token: code,
-                type: 'reauthentication' // Важно! Тип для переподтверждения
+            const { data, error } = await supabaseClient.auth.updateUser({
+                nonce: code 
             });
 
             if (error) {
@@ -209,11 +226,11 @@
             } else {
                 closeModal('reauth-modal');
                 openModal('final-delete-modal');
-                startDeleteTimer(); // Запускаем таймер
+                startDeleteTimer(); 
             }
         });
 
-        // 6. Таймер на 5 секунд для финального удаления
+        // 6. Таймер на 5 секунд
         function startDeleteTimer() {
             const btn = document.getElementById('final-delete-btn');
             let timeLeft = 5;
@@ -227,7 +244,7 @@
                 } else {
                     clearInterval(interval);
                     btn.innerText = 'Удалить навсегда';
-                    btn.disabled = false; // Разблокировали
+                    btn.disabled = false;
                 }
             }, 1000);
         }
@@ -237,7 +254,6 @@
             const btn = document.getElementById('final-delete-btn');
             btn.innerText = 'Удаление...';
             
-            // Вызываем защищенную функцию на серверах Supabase
             const { data, error } = await supabaseClient.functions.invoke('delete-user');
             
             if (error) {
