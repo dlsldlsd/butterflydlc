@@ -87,7 +87,8 @@
             
             <form id="form-verify">
                 <div class="input-group">
-                    <input type="text" id="otp-code" class="otp-input" placeholder="000000" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" required>
+                    <!-- ИСПРАВЛЕНО: maxlength="8" и placeholder="00000000" -->
+                    <input type="text" id="otp-code" class="otp-input" placeholder="00000000" maxlength="8" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" required>
                 </div>
                 
                 <div class="error-msg" id="error-verify">Неверный код.</div>
@@ -115,8 +116,6 @@
     <script>
         const SUPABASE_URL = 'https://kkdpwgndorwibvqabvrw.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_wIvuDu1iHn7sPfa1ojhiQA_gxF6acmX';
-        
-        // ИСПРАВЛЕНО
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let regEmail = '';
@@ -152,7 +151,6 @@
 
             regEmail = email;
 
-            // ИСПРАВЛЕНО: используем supabaseClient
             const { data, error } = await supabaseClient.auth.signUp({
                 email: email,
                 password: pass,
@@ -187,7 +185,6 @@
             spinner.style.display = 'block';
             btn.disabled = true;
 
-            // ИСПРАВЛЕНО
             const { data, error } = await supabaseClient.auth.verifyOtp({
                 email: regEmail,
                 token: token,
@@ -203,7 +200,6 @@
             } else {
                 document.getElementById('success-modal').classList.add('active');
                 setTimeout(() => {
-                    // ИСПРАВЛЕНО
                     supabaseClient.auth.signOut().then(() => {
                         window.location.href = 'login.html'; 
                     });

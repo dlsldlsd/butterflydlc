@@ -9,7 +9,6 @@
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     
     <style>
-        /* Стили оставляем как были */
         :root { --bg: #0f0f13; --card-bg: #1a1a22; --text: #ffffff; --text-dim: #a0a0b0; --accent: #8b5cf6; --accent-hover: #7c3aed; --border: #2a2a35; --error: #ef4444; --success: #10b981; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Montserrat', sans-serif; background-color: var(--bg); color: var(--text); height: 100vh; display: flex; justify-content: center; align-items: center; background-image: radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.15) 0%, transparent 60%); }
@@ -20,6 +19,9 @@
         .input-group label { display: block; font-size: 13px; color: var(--text-dim); margin-bottom: 5px; margin-left: 5px; }
         .input-group input { width: 100%; padding: 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-family: 'Montserrat', sans-serif; font-size: 14px; transition: 0.3s; }
         .input-group input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 10px rgba(139, 92, 246, 0.2); }
+        
+        /* Стили для поля кода */
+        .otp-input { font-size: 28px !important; letter-spacing: 10px; text-align: center; color: var(--accent) !important; font-weight: 800; padding: 15px 10px !important; }
         .cf-turnstile { display: flex; justify-content: center; margin: 20px 0; }
         .btn-submit { width: 100%; padding: 14px; border-radius: 8px; background: var(--accent); color: #fff; border: none; font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 16px; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3); display: flex; justify-content: center; align-items: center; gap: 10px; }
         .btn-submit:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-2px); }
@@ -31,7 +33,10 @@
         .link-container { margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--border); }
         .action-link { color: var(--text-dim); text-decoration: none; font-size: 14px; }
         .action-link span { color: var(--accent); font-weight: 800; margin-left: 5px; }
-        .back-link { display: inline-block; margin-top: 15px; color: var(--text-dim); text-decoration: none; font-size: 12px; }
+        .back-link { display: inline-block; margin-top: 15px; color: var(--text-dim); text-decoration: none; font-size: 12px; cursor: pointer; background: none; border: none; font-family: inherit; }
+        .hidden { display: none !important; }
+        .subtitle { font-size: 13px; color: var(--text-dim); margin-bottom: 25px; }
+        .subtitle strong { color: var(--accent); }
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 15, 19, 0.85); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: all 0.3s ease; z-index: 1000; }
         .modal-overlay.active { opacity: 1; visibility: visible; }
         .modal-content { background: var(--card-bg); border: 1px solid var(--success); border-radius: 16px; padding: 40px; text-align: center; max-width: 350px; width: 90%; transform: translateY(20px) scale(0.95); transition: all 0.3s ease; }
@@ -43,34 +48,57 @@
 
     <div class="login-container">
         <img src="logo.png" alt="Logo" class="logo-img">
-        <h2>Вход в аккаунт</h2>
         
-        <form id="login-form">
-            <div class="input-group">
-                <label>Email</label>
-                <input type="email" id="email" placeholder="you@example.com" required>
-            </div>
+        <!-- ЭТАП 1: ВВОД ПОЧТЫ И ПАРОЛЯ -->
+        <div id="step-login">
+            <h2>Вход в аккаунт</h2>
+            <form id="login-form">
+                <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" id="email" placeholder="you@example.com" required>
+                </div>
+                
+                <div class="input-group">
+                    <label>Пароль</label>
+                    <input type="password" id="password" placeholder="••••••••" required>
+                </div>
+
+                <div class="cf-turnstile" data-sitekey="0x4AAAAAAFyCFRaexblhfbXL" data-theme="dark"></div>
+
+                <div class="error-msg" id="error-msg">Неверный email или пароль.</div>
+
+                <button type="submit" class="btn-submit" id="btn-login">
+                    <span id="btn-text">Войти</span>
+                    <div class="spinner" id="spinner"></div>
+                </button>
+            </form>
             
-            <div class="input-group">
-                <label>Пароль</label>
-                <input type="password" id="password" placeholder="••••••••" required>
+            <div class="link-container">
+                <a href="register.html" class="action-link">Нет аккаунта? <span>Зарегистрироваться</span></a>
             </div>
-
-            <div class="cf-turnstile" data-sitekey="0x4AAAAAAFyCFRaexblhfbXL" data-theme="dark"></div>
-
-            <div class="error-msg" id="error-msg">Неверный email или пароль.</div>
-
-            <button type="submit" class="btn-submit" id="btn-login">
-                <span id="btn-text">Войти</span>
-                <div class="spinner" id="spinner"></div>
-            </button>
-        </form>
-
-        <div class="link-container">
-            <a href="register.html" class="action-link">Нет аккаунта? <span>Зарегистрироваться</span></a>
         </div>
 
-        <a href="index.html" class="back-link">← На главную</a>
+        <!-- ЭТАП 2: ВВОД КОДА (ЕСЛИ IP СМЕНИЛСЯ) -->
+        <div id="step-verify" class="hidden">
+            <h2>Подтвердите вход</h2>
+            <p class="subtitle">Мы заметили вход с нового IP. <br>Код отправлен на <strong id="user-email-display"></strong></p>
+            
+            <form id="form-verify">
+                <div class="input-group">
+                    <input type="text" id="otp-code" class="otp-input" placeholder="00000000" maxlength="8" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" required>
+                </div>
+                
+                <div class="error-msg" id="error-verify">Неверный код.</div>
+
+                <button type="submit" class="btn-submit" id="btn-verify">
+                    <span id="btn-text-verify">Подтвердить</span>
+                    <div class="spinner" id="spinner-verify"></div>
+                </button>
+            </form>
+            <button class="back-link" id="btn-back">← Назад</button>
+        </div>
+
+        <a href="index.html" class="back-link" id="link-main" style="margin-top: 20px;">← На главную</a>
     </div>
 
     <div class="modal-overlay" id="success-modal">
@@ -85,10 +113,23 @@
     <script>
         const SUPABASE_URL = 'https://kkdpwgndorwibvqabvrw.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_wIvuDu1iHn7sPfa1ojhiQA_gxF6acmX';
-        
-        // ИСПРАВЛЕНО: Добавили Client в название переменной
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        let currentEmail = '';
+        let currentPassword = '';
+
+        // Функция получения IP-адреса
+        async function getIP() {
+            try {
+                const res = await fetch('https://api.ipify.org?format=json');
+                const data = await res.json();
+                return data.ip;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        // ЭТАП 1: ВХОД ПО ПАРОЛЮ
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value.trim().toLowerCase();
@@ -99,31 +140,120 @@
             const errorMsg = document.getElementById('error-msg');
 
             errorMsg.classList.remove('show');
-            btnText.innerText = 'Вход...';
+            btnText.innerText = 'Проверка...';
             spinner.style.display = 'block';
             btn.disabled = true;
 
-            // ИСПРАВЛЕНО: используем supabaseClient
-            const { data, error } = await supabaseClient.auth.signInWithPassword({
+            currentEmail = email;
+            currentPassword = password;
+
+            // 1. Получаем текущий IP
+            const currentIP = await getIP();
+            
+            // 2. Получаем сохраненный IP из localStorage
+            const savedIP = localStorage.getItem('saved_ip');
+            const savedEmail = localStorage.getItem('saved_email');
+
+            // 3. Если IP совпадает и почта та же — входим сразу
+            if (currentIP && savedIP && currentIP === savedIP && email === savedEmail) {
+                // Входим по паролю
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) {
+                    errorMsg.innerText = 'Ошибка: ' + error.message;
+                    errorMsg.classList.add('show');
+                    btnText.innerText = 'Войти';
+                    spinner.style.display = 'none';
+                    btn.disabled = false;
+                    if (window.turnstile) window.turnstile.reset();
+                } else {
+                    document.getElementById('success-modal').classList.add('active');
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1500);
+                }
+                return;
+            }
+
+            // 4. Если IP новый или почта другая — отправляем код на почту
+            const { error } = await supabaseClient.auth.signInWithOtp({
                 email: email,
-                password: password
+                options: { shouldCreateUser: false } // Только для существующих юзеров
             });
 
             if (error) {
-                errorMsg.innerText = error.message.includes('Invalid login credentials') 
-                                     ? 'Неверный email или пароль' 
-                                     : 'Ошибка: ' + error.message;
+                errorMsg.innerText = 'Ошибка: ' + error.message;
                 errorMsg.classList.add('show');
                 btnText.innerText = 'Войти';
                 spinner.style.display = 'none';
                 btn.disabled = false;
                 if (window.turnstile) window.turnstile.reset();
             } else {
+                // Переключаем на ввод кода
+                document.getElementById('user-email-display').innerText = email;
+                document.getElementById('step-login').classList.add('hidden');
+                document.getElementById('step-verify').classList.remove('hidden');
+                document.getElementById('link-main').classList.add('hidden');
+            }
+        });
+
+        // ЭТАП 2: ПРОВЕРКА КОДА
+        document.getElementById('form-verify').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const token = document.getElementById('otp-code').value.trim();
+            const btn = document.getElementById('btn-verify');
+            const btnText = document.getElementById('btn-text-verify');
+            const spinner = document.getElementById('spinner-verify');
+            const errorMsg = document.getElementById('error-verify');
+
+            errorMsg.classList.remove('show');
+            btnText.innerText = 'Проверка...';
+            spinner.style.display = 'block';
+            btn.disabled = true;
+
+            // Проверяем код
+            const { data, error } = await supabaseClient.auth.verifyOtp({
+                email: currentEmail,
+                token: token,
+                type: 'email'
+            });
+
+            if (error) {
+                errorMsg.innerText = 'Неверный код или время истекло.';
+                errorMsg.classList.add('show');
+                btnText.innerText = 'Подтвердить';
+                spinner.style.display = 'none';
+                btn.disabled = false;
+            } else {
+                // УСПЕХ! Сохраняем IP и почту на 30 дней
+                const currentIP = await getIP();
+                if (currentIP) {
+                    localStorage.setItem('saved_ip', currentIP);
+                    localStorage.setItem('saved_email', currentEmail);
+                    // Устанавливаем срок жизни (30 дней) - это упрощенно, localStorage не имеет срока, 
+                    // но можно хранить timestamp и проверять
+                    localStorage.setItem('saved_ip_expiry', Date.now() + 30 * 24 * 60 * 60 * 1000);
+                }
+
                 document.getElementById('success-modal').classList.add('active');
                 setTimeout(() => {
                     window.location.href = 'dashboard.html';
                 }, 1500);
             }
+        });
+
+        // Кнопка "Назад"
+        document.getElementById('btn-back').addEventListener('click', () => {
+            document.getElementById('step-verify').classList.add('hidden');
+            document.getElementById('step-login').classList.remove('hidden');
+            document.getElementById('link-main').classList.remove('hidden');
+            document.getElementById('otp-code').value = '';
+            document.getElementById('btn-login').disabled = false;
+            document.getElementById('btn-text').innerText = 'Войти';
+            document.getElementById('spinner').style.display = 'none';
         });
     </script>
 </body>
