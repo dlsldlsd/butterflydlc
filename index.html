@@ -13,9 +13,9 @@
             --card-bg: #1a1a22;
             --text: #ffffff;
             --text-dim: #a0a0b0;
-            --accent: #8b5cf6; /* Фиолетовый неон */
+            --accent: #8b5cf6;
             --accent-hover: #7c3aed;
-            --beta-color: #f59e0b; /* Желтый для беты */
+            --beta-color: #f59e0b;
             --border: #2a2a35;
         }
 
@@ -104,7 +104,13 @@
         .pricing-card.beta .btn { border-color: var(--beta-color); color: var(--beta-color); }
         .pricing-card.beta .btn:hover { background: var(--beta-color); color: #000; }
 
+        /* Подвал */
         footer { text-align: center; padding: 40px; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 14px; }
+        
+        /* Стили для баннера в подвале */
+        .footer-banner { margin-bottom: 25px; display: flex; justify-content: center; }
+        .footer-banner img { max-width: 100%; height: auto; border-radius: 8px; opacity: 0.7; transition: opacity 0.3s ease, transform 0.3s ease; }
+        .footer-banner img:hover { opacity: 1; transform: translateY(-3px); }
 
         @media (max-width: 768px) {
             header { padding: 15px 20px; }
@@ -124,9 +130,7 @@
             <img src="logo.png" alt="Logo" class="logo-img">
             Butterfly <span>DLC</span>
         </a>
-        <!-- Кнопки теперь будут генерироваться скриптом в зависимости от входа -->
         <div class="nav-buttons" id="auth-buttons">
-            <!-- Заглушка, пока скрипт не загрузился -->
             <a href="/login" class="btn btn-outline">Войти</a>
             <a href="#pricing" class="btn btn-primary">Купить</a>
         </div>
@@ -157,14 +161,19 @@
     </section>
 
     <footer>
+        <!-- ТВОЙ НОВЫЙ БАННЕР -->
+        <div class="footer-banner">
+            <a href="https://duckgo.io" title="big-dark-1" target="_blank" rel="noopener noreferrer">
+                <img src="https://cdn.duckgo.io/images/logos/banners/big-dark-1.png" alt="big-dark-1" />
+            </a>
+        </div>
+
         <p>© 2026 Butterfly DLC. Все права защищены.</p>
         <p style="margin-top: 10px; font-size: 12px;">Нажимая кнопку «Оформить», вы соглашаетесь с условиями предоставления услуг.</p>
     </footer>
 
-    <!-- Подключаем Supabase для проверки входа -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // --- 1. ПРОВЕРКА АВТОРИЗАЦИИ ---
         const supabaseClient = supabase.createClient('https://kkdpwgndorwibvqabvrw.supabase.co', 'sb_publishable_wIvuDu1iHn7sPfa1ojqiQA_gxF6acmX');
 
         async function updateHeader() {
@@ -172,13 +181,11 @@
             const container = document.getElementById('auth-buttons');
 
             if (session) {
-                // Если вошел — показываем почту, которая ведет в /dashboard
                 container.innerHTML = `
                     <a href="/dashboard" class="btn btn-outline" style="border-color: var(--accent); color: var(--accent); font-weight: 800;">👤 ${session.user.email}</a>
                     <a href="#pricing" class="btn btn-primary">Купить</a>
                 `;
             } else {
-                // Если не вошел — кнопка Войти ведет на /login
                 container.innerHTML = `
                     <a href="/login" class="btn btn-outline">Войти</a>
                     <a href="#pricing" class="btn btn-primary">Купить</a>
@@ -187,7 +194,6 @@
         }
         updateHeader();
 
-        // --- 2. ЗАГРУЗКА ТАРИФОВ ИЗ JSON ---
         fetch('data.json')
             .then(response => response.json())
             .then(data => {
