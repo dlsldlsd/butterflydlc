@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход — Butterfly DLC</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <!-- Подключаем скрипт капчи Cloudflare -->
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    
+    <style>
+        :root { --bg: #0f0f13; --card-bg: #1a1a22; --text: #ffffff; --text-dim: #a0a0b0; --accent: #8b5cf6; --accent-hover: #7c3aed; --border: #2a2a35; --error: #ef4444; --success: #10b981; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Montserrat', sans-serif; background-color: var(--bg); color: var(--text); height: 100vh; display: flex; justify-content: center; align-items: center; background-image: radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.15) 0%, transparent 60%); }
+        .login-container { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 40px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
+        .logo-img { height: 60px; width: 60px; border-radius: 12px; object-fit: cover; box-shadow: 0 0 20px rgba(139, 92, 246, 0.6); margin-bottom: 20px; }
+        .login-container h2 { font-size: 24px; font-weight: 800; margin-bottom: 25px; }
+        .input-group { margin-bottom: 15px; text-align: left; }
+        .input-group label { display: block; font-size: 13px; color: var(--text-dim); margin-bottom: 5px; margin-left: 5px; }
+        .input-group input { width: 100%; padding: 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-family: 'Montserrat', sans-serif; font-size: 14px; transition: 0.3s; }
+        .input-group input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 10px rgba(139, 92, 246, 0.2); }
+        
+        /* Стили для капчи */
+        .cf-turnstile { display: flex; justify-content: center; margin: 20px 0; }
+        
+        .btn-submit { width: 100%; padding: 14px; border-radius: 8px; background: var(--accent); color: #fff; border: none; font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 16px; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3); display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .btn-submit:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-2px); }
+        .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+        .spinner { display: none; width: 18px; height: 18px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .error-msg { color: var(--error); font-size: 13px; font-weight: 600; margin-bottom: 15px; display: none; text-align: center; }
+        .error-msg.show { display: block; }
+        .link-container { margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--border); }
+        .action-link { color: var(--text-dim); text-decoration: none; font-size: 14px; }
+        .action-link span { color: var(--accent); font-weight: 800; margin-left: 5px; }
+        .back-link { display: inline-block; margin-top: 15px; color: var(--text-dim); text-decoration: none; font-size: 12px; }
+        
+        /* Модалка */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 15, 19, 0.85); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: all 0.3s ease; z-index: 1000; }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-content { background: var(--card-bg); border: 1px solid var(--success); border-radius: 16px; padding: 40px; text-align: center; max-width: 350px; width: 90%; transform: translateY(20px) scale(0.95); transition: all 0.3s ease; }
+        .modal-overlay.active .modal-content { transform: translateY(0) scale(1); }
+        .modal-icon { font-size: 50px; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <img src="logo.png" alt="Logo" class="logo-img">
+        <h2>Вход в аккаунт</h2>
+        
+        <form id="login-form">
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" id="email" placeholder="you@example.com" required>
+            </div>
+            
+            <div class="input-group">
+                <label>Пароль</label>
+                <input type="password" id="password" placeholder="••••••••" required>
+            </div>
+
+            <!-- ВОЗВРАЩАЕМ КАПЧУ -->
+            <div class="cf-turnstile" data-sitekey="0x4AAAAAAFyCFRaexblhfbXL" data-theme="dark"></div>
+
+            <div class="error-msg" id="error-msg">Неверный email или пароль.</div>
+
+            <button type="submit" class="btn-submit" id="btn-login">
+                <span id="btn-text">Войти</span>
+                <div class="spinner" id="spinner"></div>
+            </button>
+        </form>
+
+        <div class="link-container">
+            <a href="register.html" class="action-link">Нет аккаунта? <span>Зарегистрироваться</span></a>
+        </div>
+
+        <a href="index.html" class="back-link">← На главную</a>
+    </div>
+
+    <div class="modal-overlay" id="success-modal">
+        <div class="modal-content">
+            <div class="modal-icon">✅</div>
+            <h3>Успешный вход!</h3>
+            <p>Добро пожаловать в Butterfly DLC.</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://kkdpwgndorwibvqabvrw.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_wIvuDu1iHn7sPfa1ojhiQA_gxF6acmX';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value.trim().toLowerCase();
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('btn-login');
+            const btnText = document.getElementById('btn-text');
+            const spinner = document.getElementById('spinner');
+            const errorMsg = document.getElementById('error-msg');
+
+            errorMsg.classList.remove('show');
+            btnText.innerText = 'Вход...';
+            spinner.style.display = 'block';
+            btn.disabled = true;
+
+            // Входим по паролю
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
+
+            if (error) {
+                errorMsg.innerText = error.message.includes('Invalid login credentials') 
+                                     ? 'Неверный email или пароль' 
+                                     : 'Ошибка: ' + error.message;
+                errorMsg.classList.add('show');
+                btnText.innerText = 'Войти';
+                spinner.style.display = 'none';
+                btn.disabled = false;
+                
+                // Сбрасываем капчу при ошибке, чтобы можно было попробовать снова
+                if (window.turnstile) window.turnstile.reset();
+            } else {
+                // Успех!
+                document.getElementById('success-modal').classList.add('active');
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1500);
+            }
+        });
+    </script>
+</body>
+</html>

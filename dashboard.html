@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Личный кабинет — Butterfly DLC</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg: #0f0f13;
+            --card-bg: #1a1a22;
+            --text: #ffffff;
+            --text-dim: #a0a0b0;
+            --accent: #8b5cf6;
+            --accent-hover: #7c3aed;
+            --border: #2a2a35;
+            --success: #10b981;
+            --error: #ef4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            background-image: radial-gradient(circle at 50% -20%, rgba(139, 92, 246, 0.15) 0%, transparent 50%);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 50px;
+            background: rgba(15, 15, 19, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo { font-size: 24px; font-weight: 800; display: flex; align-items: center; gap: 12px; }
+        .logo span { color: var(--accent); }
+        .logo-img { height: 40px; width: 40px; border-radius: 8px; }
+        
+        .btn-logout {
+            background: transparent; color: var(--text-dim); border: 1px solid var(--border);
+            padding: 8px 16px; border-radius: 8px; cursor: pointer; transition: 0.3s;
+            font-family: 'Montserrat', sans-serif; font-weight: 600;
+        }
+        .btn-logout:hover { border-color: var(--error); color: var(--error); }
+
+        .dashboard-container {
+            max-width: 800px;
+            margin: 60px auto;
+            padding: 0 20px;
+        }
+
+        .profile-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px;
+            background: linear-gradient(90deg, var(--accent), var(--success));
+        }
+
+        .user-avatar {
+            width: 80px; height: 80px; border-radius: 50%;
+            background: var(--border); margin: 0 auto 20px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 32px; box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+        }
+
+        .user-email { font-size: 20px; font-weight: 800; margin-bottom: 5px; }
+        .user-id { font-size: 12px; color: var(--text-dim); margin-bottom: 30px; }
+
+        .status-box {
+            background: var(--bg);
+            border: 1px dashed var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .status-title { font-size: 14px; color: var(--text-dim); margin-bottom: 5px; }
+        .status-value { font-size: 24px; font-weight: 800; }
+        .status-inactive { color: var(--error); }
+        .status-active { color: var(--success); text-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
+
+        .btn-action {
+            display: block; width: 100%; padding: 15px; border-radius: 8px;
+            background: var(--accent); color: #fff; text-decoration: none;
+            font-weight: 800; margin-bottom: 15px; transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3); border: none; cursor: pointer;
+            font-family: 'Montserrat', sans-serif; font-size: 16px;
+        }
+        .btn-action:hover { background: var(--accent-hover); transform: translateY(-2px); }
+
+        .btn-download {
+            display: block; width: 100%; padding: 15px; border-radius: 8px;
+            background: transparent; color: var(--text-dim); border: 1px solid var(--border);
+            font-weight: 800; cursor: not-allowed; font-family: 'Montserrat', sans-serif; font-size: 16px;
+            text-decoration: none;
+        }
+        
+        .btn-download.active {
+            background: var(--success); color: #fff; border: none; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        .btn-download.active:hover { transform: translateY(-2px); }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <img src="logo.png" alt="Logo" class="logo-img">
+            Butterfly <span>DLC</span>
+        </div>
+        <button class="btn-logout" id="logout-btn">Выйти</button>
+    </header>
+
+    <div class="dashboard-container">
+        <div class="profile-card">
+            <div class="user-avatar">👤</div>
+            <!-- Сюда подставится почта пользователя -->
+            <div class="user-email" id="user-email">Загрузка...</div>
+            <div class="user-id" id="user-id">ID: ...</div>
+
+            <div class="status-box">
+                <div class="status-title">Статус подписки</div>
+                <!-- Сюда подставится статус (Активна/Не активна) -->
+                <div class="status-value status-inactive" id="sub-status">Не активна</div>
+            </div>
+
+            <a href="index.html#pricing" class="btn-action">💳 Купить подписку</a>
+            
+            <!-- Кнопка скачивания. Сейчас заблокирована (без ссылки) -->
+            <a href="#" class="btn-download" id="download-btn">⬇️ Скачать лоадер (Нет подписки)</a>
+        </div>
+    </div>
+
+    <!-- Подключаем Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://kkdpwgndorwibvqabvrw.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_wIvuDu1iHn7sPfa1ojhiQA_gxF6acmX';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        async function checkUser() {
+            // Проверяем, есть ли активная сессия (залогинен ли юзер)
+            const { data: { session }, error } = await supabase.auth.getSession();
+
+            if (!session) {
+                // Если не залогинен — принудительно кидаем на страницу входа
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Показываем данные пользователя
+            const user = session.user;
+            document.getElementById('user-email').innerText = user.email;
+            // Обрезаем длинный UUID для красоты
+            document.getElementById('user-id').innerText = 'ID: ' + user.id.split('-')[0] + '...';
+
+            // ТУТ БУДЕТ ПРОВЕРКА ПОДПИСКИ В БУДУЩЕМ
+            // Пока для теста: если email содержит 'admin' или это твой тестовый email, 
+            // то мы делаем вид, что подписка активна.
+            // (В реальности мы будем брать это из таблицы profiles в Supabase)
+            
+            const testEmail = "твой_email@mail.ru"; // Замени на свою почту для теста
+            if (user.email.includes('admin') || user.email === testEmail) {
+                const statusEl = document.getElementById('sub-status');
+                statusEl.innerText = 'Активна (Навсегда)';
+                statusEl.className = 'status-value status-active';
+                
+                const dlBtn = document.getElementById('download-btn');
+                dlBtn.innerText = '⬇️ Скачать лоадер';
+                dlBtn.className = 'btn-download active';
+                dlBtn.href = '#'; // Сюда потом вставим ссылку на скачивание
+            }
+        }
+
+        // Кнопка выхода
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            window.location.href = 'index.html';
+        });
+
+        // Запускаем проверку при загрузке страницы
+        checkUser();
+    </script>
+</body>
+</html>

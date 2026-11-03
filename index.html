@@ -7,9 +7,6 @@
     <link rel="icon" type="image/png" href="logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     
-    <!-- Скрипт капчи Cloudflare должен быть в head -->
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-
     <style>
         :root {
             --bg: #0f0f13;
@@ -107,39 +104,6 @@
         .pricing-card.beta .btn { border-color: var(--beta-color); color: var(--beta-color); }
         .pricing-card.beta .btn:hover { background: var(--beta-color); color: #000; }
 
-        /* --- СТИЛИ ДЛЯ ФОРМЫ ВХОДА --- */
-        .login-section {
-            padding: 120px 20px 60px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .login-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            padding: 40px 30px;
-            border-radius: 16px;
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-        .login-card h2 { margin-bottom: 20px; font-weight: 800; font-size: 24px; }
-        .login-card input {
-            width: 100%;
-            padding: 14px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background: var(--bg);
-            color: var(--text);
-            font-family: 'Montserrat', sans-serif;
-            font-size: 14px;
-        }
-        .login-card input:focus { outline: none; border-color: var(--accent); }
-        .login-card .btn { width: 100%; margin-top: 10px; }
-        .cf-turnstile { display: flex; justify-content: center; margin-bottom: 15px; }
-
         footer { text-align: center; padding: 40px; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 14px; }
 
         @media (max-width: 768px) {
@@ -161,27 +125,11 @@
             Butterfly <span>DLC</span>
         </div>
         <div class="nav-buttons">
-            <!-- Кнопка Войти теперь ведет вниз к форме (href="#login") -->
-            <a href="#login" class="btn btn-outline">Войти</a>
+            <!-- ТЕПЕРЬ КНОПКА ВЕДЕТ НА ОТДЕЛЬНУЮ СТРАНИЦУ login.html -->
+            <a href="login.html" class="btn btn-outline">Войти</a>
             <a href="#pricing" class="btn btn-primary">Купить</a>
         </div>
     </header>
-
-    <!-- СЕКЦИЯ ВХОДА (ФОРМА) -->
-    <section class="login-section" id="login">
-        <div class="login-card">
-            <h2>Вход в аккаунт</h2>
-            <form id="login-form">
-                <input type="text" placeholder="Логин" required>
-                <input type="password" placeholder="Пароль" required>
-
-                <!-- Виджет Turnstile -->
-                <div class="cf-turnstile" data-sitekey="0x4AAAAAAFyCFRaexblhfbXL" data-theme="dark"></div>
-
-                <button type="submit" class="btn btn-primary">Войти</button>
-            </form>
-        </div>
-    </section>
 
     <section class="hero">
         <h1>Твой новый уровень <br>в <span>любимой игре</span></h1>
@@ -212,14 +160,10 @@
         <p style="margin-top: 10px; font-size: 12px;">Нажимая кнопку «Оформить», вы соглашаетесь с условиями предоставления услуг.</p>
     </footer>
 
-    <!-- МАГИЯ ТУТ: Сайт читает JSON и собирает карточки -->
     <script>
-        // Загружаем файл с данными
         fetch('data.json')
             .then(response => response.json())
             .then(data => {
-                
-                // 1. Рисуем ВЕРСИИ
                 const versionGrid = document.getElementById('versionGrid');
                 data.versions.forEach(v => {
                     const isSoon = v.status === 'soon';
@@ -232,7 +176,6 @@
                     versionGrid.appendChild(card);
                 });
 
-                // 2. Рисуем ТАРИФЫ
                 const pricingGrid = document.getElementById('pricingGrid');
                 data.pricing.forEach(p => {
                     const popularClass = p.isPopular ? 'popular' : '';
@@ -250,9 +193,7 @@
                         ${badgeHtml}
                         <h3>${p.version} <span>/ ${p.period}</span></h3>
                         <div class="price">${p.price} <span>₽</span></div>
-                        <ul class="features">
-                            ${featuresHtml}
-                        </ul>
+                        <ul class="features">${featuresHtml}</ul>
                         <a href="#" class="btn ${btnClass}">Оформить</a>
                     `;
                     pricingGrid.appendChild(card);
@@ -260,7 +201,6 @@
             })
             .catch(error => {
                 console.error('Ошибка загрузки данных:', error);
-                document.getElementById('pricingGrid').innerHTML = '<p style="color:red; text-align:center; width:100%;">Ошибка загрузки тарифов. Проверьте файл data.json</p>';
             });
     </script>
 </body>
