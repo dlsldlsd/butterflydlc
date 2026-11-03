@@ -19,8 +19,6 @@
         .input-group label { display: block; font-size: 13px; color: var(--text-dim); margin-bottom: 5px; margin-left: 5px; }
         .input-group input { width: 100%; padding: 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-family: 'Montserrat', sans-serif; font-size: 14px; transition: 0.3s; }
         .input-group input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 10px rgba(139, 92, 246, 0.2); }
-        
-        /* Стили для поля кода */
         .otp-input { font-size: 28px !important; letter-spacing: 10px; text-align: center; color: var(--accent) !important; font-weight: 800; padding: 15px 10px !important; }
         .cf-turnstile { display: flex; justify-content: center; margin: 20px 0; }
         .btn-submit { width: 100%; padding: 14px; border-radius: 8px; background: var(--accent); color: #fff; border: none; font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 16px; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3); display: flex; justify-content: center; align-items: center; gap: 10px; }
@@ -116,7 +114,6 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let currentEmail = '';
-        let currentPassword = '';
 
         // Функция получения IP-адреса
         async function getIP() {
@@ -129,7 +126,7 @@
             }
         }
 
-        // ЭТАП 1: ВХОД ПО ПАРОЛЮ
+        // ЭТАП 1: ВХОД ПО ПАРОЛЮ ИЛИ ОТПРАВКА КОДА
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value.trim().toLowerCase();
@@ -140,26 +137,33 @@
             const errorMsg = document.getElementById('error-msg');
 
             errorMsg.classList.remove('show');
+            
+            // 1. СРАЗУ ПОЛУЧАЕМ ТОКЕН КАПЧИ (Он нужен для обоих действий)
+            const captchaToken = document.querySelector('[name="cf-turnstile-response"]').value;
+            if (!captchaToken) {
+                errorMsg.innerText = 'Пожалуйста, пройдите проверку на робота.';
+                errorMsg.classList.add('show');
+                return;
+            }
+
             btnText.innerText = 'Проверка...';
             spinner.style.display = 'block';
             btn.disabled = true;
 
             currentEmail = email;
-            currentPassword = password;
 
-            // 1. Получаем текущий IP
+            // 2. Получаем IP
             const currentIP = await getIP();
-            
-            // 2. Получаем сохраненный IP из localStorage
             const savedIP = localStorage.getItem('saved_ip');
             const savedEmail = localStorage.getItem('saved_email');
 
-            // 3. Если IP совпадает и почта та же — входим сразу
+            // 3. Если IP и почта совпадают — входим по паролю
             if (currentIP && savedIP && currentIP === savedIP && email === savedEmail) {
-                // Входим по паролю
+                
                 const { data, error } = await supabaseClient.auth.signInWithPassword({
                     email: email,
-                    password: password
+                    password: password,
+                    options: { captchaToken: captchaToken } // Передаем капчу
                 });
 
                 if (error) {
@@ -178,10 +182,13 @@
                 return;
             }
 
-            // 4. Если IP новый или почта другая — отправляем код на почту
+            // 4. Если IP новый — отправляем код на почту
             const { error } = await supabaseClient.auth.signInWithOtp({
                 email: email,
-                options: { shouldCreateUser: false } // Только для существующих юзеров
+                options: { 
+                    shouldCreateUser: false,
+                    captchaToken: captchaToken // Передаем капчу и сюда!
+                }
             });
 
             if (error) {
@@ -228,14 +235,11 @@
                 spinner.style.display = 'none';
                 btn.disabled = false;
             } else {
-                // УСПЕХ! Сохраняем IP и почту на 30 дней
+                // УСПЕХ! Сохраняем IP и почту
                 const currentIP = await getIP();
                 if (currentIP) {
                     localStorage.setItem('saved_ip', currentIP);
                     localStorage.setItem('saved_email', currentEmail);
-                    // Устанавливаем срок жизни (30 дней) - это упрощенно, localStorage не имеет срока, 
-                    // но можно хранить timestamp и проверять
-                    localStorage.setItem('saved_ip_expiry', Date.now() + 30 * 24 * 60 * 60 * 1000);
                 }
 
                 document.getElementById('success-modal').classList.add('active');
@@ -254,6 +258,7 @@
             document.getElementById('btn-login').disabled = false;
             document.getElementById('btn-text').innerText = 'Войти';
             document.getElementById('spinner').style.display = 'none';
+            if (window.turnstile) window.turnstile.reset(); // Сбрасываем капчу при возврате
         });
     </script>
 </body>
