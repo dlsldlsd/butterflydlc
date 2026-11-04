@@ -114,8 +114,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const SUPABASE_URL = 'https://gkwlcxrbnonzvyfojvji.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_8DLY4OsDRN8bhfAuKjc89w_Mp69vgyY';
+        const SUPABASE_URL = 'https://kkdpwgndorwibvqabvrw.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_wIvuDu1iHn7sPfa1ojhiQA_gxF6acmX';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let regEmail = '';
@@ -154,7 +154,7 @@
             const { data, error } = await supabaseClient.auth.signUp({
                 email: email,
                 password: pass,
-                options: { captchaToken: captchaToken }
+                type: 'signup'
             });
 
             if (error) {

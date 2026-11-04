@@ -107,10 +107,40 @@
         /* Подвал */
         footer { text-align: center; padding: 40px; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 14px; }
         
-        /* Стили для баннера в подвале */
         .footer-banner { margin-bottom: 25px; display: flex; justify-content: center; }
         .footer-banner img { max-width: 100%; height: auto; border-radius: 8px; opacity: 0.7; transition: opacity 0.3s ease, transform 0.3s ease; }
         .footer-banner img:hover { opacity: 1; transform: translateY(-3px); }
+
+        /* --- МОДАЛЬНОЕ ОКНО ДЛЯ ОПЛАТЫ --- */
+        .payment-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 15, 19, 0.9); backdrop-filter: blur(8px);
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; visibility: hidden; transition: all 0.3s ease; z-index: 1000;
+        }
+        .payment-modal-overlay.active { opacity: 1; visibility: visible; }
+
+        .payment-modal-content {
+            position: relative;
+            width: 100%;
+            max-width: 340px;
+            transform: translateY(20px); transition: all 0.3s ease;
+        }
+        .payment-modal-overlay.active .payment-modal-content { transform: translateY(0); }
+
+        .payment-close-btn {
+            position: absolute; top: -40px; right: 0;
+            background: transparent; border: none; color: var(--text-dim);
+            font-size: 30px; cursor: pointer; transition: 0.3s;
+        }
+        .payment-close-btn:hover { color: var(--accent); }
+
+        /* Стили самого iframe */
+        .payment-iframe {
+            width: 100%; height: 590px; border: none; border-radius: 16px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 20px rgba(139, 92, 246, 0.2);
+            background: #1a1a22;
+        }
 
         @media (max-width: 768px) {
             header { padding: 15px 20px; }
@@ -120,6 +150,7 @@
             .logo { font-size: 18px; }
             .logo-img { height: 30px; width: 30px; }
             .pricing-grid { grid-template-columns: 1fr; }
+            .payment-modal-content { max-width: 95%; }
         }
     </style>
 </head>
@@ -166,8 +197,17 @@
         <p style="margin-top: 10px; font-size: 12px;">Нажимая кнопку «Оформить», вы соглашаетесь с условиями предоставления услуг.</p>
     </footer>
 
+    <!-- МОДАЛЬНОЕ ОКНО ОПЛАТЫ (Виджет DuckGo) -->
+    <div class="payment-modal-overlay" id="payment-modal">
+        <div class="payment-modal-content">
+            <button class="payment-close-btn" id="close-payment-btn">✕</button>
+            <iframe id="payment-iframe" class="payment-iframe" src="" frameborder="0"></iframe>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        // НОВЫЙ КЛЮЧ И URL УЖЕ ВСТАВЛЕНЫ СЮДА
         const supabaseClient = supabase.createClient('https://gkwlcxrbnonzvyfojvji.supabase.co', 'sb_publishable_8DLY4OsDRN8bhfAuKjc89w_Mp69vgyY');
 
         async function updateHeader() {
@@ -187,6 +227,21 @@
             }
         }
         updateHeader();
+
+        const paymentModal = document.getElementById('payment-modal');
+        const paymentIframe = document.getElementById('payment-iframe');
+        
+        document.getElementById('close-payment-btn').addEventListener('click', () => {
+            paymentModal.classList.remove('active');
+            paymentIframe.src = ''; 
+        });
+
+        paymentModal.addEventListener('click', (e) => {
+            if (e.target === paymentModal) {
+                paymentModal.classList.remove('active');
+                paymentIframe.src = '';
+            }
+        });
 
         fetch('data.json')
             .then(response => response.json())
@@ -228,11 +283,7 @@
 
                     card.querySelector('.buy-btn').addEventListener('click', async (e) => {
                         const btn = e.target;
-                        const originalText = btn.innerText;
                         
-                        btn.innerText = 'Загрузка...';
-                        btn.disabled = true;
-
                         const { data: { session } } = await supabaseClient.auth.getSession();
                         
                         if (!session) {
@@ -241,24 +292,13 @@
                         }
 
                         const amount = btn.getAttribute('data-price');
-                        const orderId = Math.floor(Math.random() * 100000000);
+                        const userEmail = session.user.email;
 
-                        // Вызываем функцию (без лишних заголовков, чтобы не ломать авторизацию)
-                        const { data, error } = await supabaseClient.functions.invoke('create-payment', {
-                            body: { 
-                                email: session.user.email, 
-                                amount: amount, 
-                                orderId: orderId 
-                            }
-                        });
+                        // Генерируем ссылку для виджета DuckGo
+                        const iframeUrl = `https://widgets.duckgo.io?type=payment-window&lang=ru&theme=dark&default_amount=${amount}&api_key=b3ba50bb2d5b7daecdcb19c844bbbfdf&shopID=77518&us_email=${encodeURIComponent(userEmail)}`;
 
-                        if (error) {
-                            alert("Ошибка создания платежа: " + error.message);
-                            btn.innerText = originalText;
-                            btn.disabled = false;
-                        } else {
-                            window.location.href = data.url;
-                        }
+                        paymentIframe.src = iframeUrl;
+                        paymentModal.classList.add('active');
                     });
                 });
             })
