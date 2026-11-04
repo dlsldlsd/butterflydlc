@@ -87,7 +87,6 @@
             
             <form id="form-verify">
                 <div class="input-group">
-                    <!-- ИСПРАВЛЕНО: maxlength="8" и placeholder="00000000" -->
                     <input type="text" id="otp-code" class="otp-input" placeholder="00000000" maxlength="8" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" required>
                 </div>
                 
@@ -114,8 +113,9 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const SUPABASE_URL = 'https://kkdpwgndorwibvqabvrw.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_wIvuDu1iHn7sPfa1ojhiQA_gxF6acmX';
+        // ВСТАВЛЕНЫ ТВОИ НОВЫЕ ДАННЫЕ
+        const SUPABASE_URL = 'https://gkwlcxrbnonzvyfojvji.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_8DLY4OsDRN8bhfAuKjc89w_Mp69vgyY';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let regEmail = '';
@@ -151,10 +151,13 @@
 
             regEmail = email;
 
+            // ИСПРАВЛЕНО: добавлена передача капчи в options
             const { data, error } = await supabaseClient.auth.signUp({
                 email: email,
                 password: pass,
-                type: 'signup'
+                options: {
+                    captchaToken: captchaToken
+                }
             });
 
             if (error) {
@@ -201,7 +204,7 @@
                 document.getElementById('success-modal').classList.add('active');
                 setTimeout(() => {
                     supabaseClient.auth.signOut().then(() => {
-                        window.location.href = 'login.html'; 
+                        window.location.href = '/login'; 
                     });
                 }, 2500);
             }
