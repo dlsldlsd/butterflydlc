@@ -109,8 +109,9 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const SUPABASE_URL = 'https://kkdpwgndorwibvqabvrw.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_wIvuDu1iHn7sPfa1ojhiQA_gxF6acmX';
+        // ВСТАВЛЕНЫ ТВОИ НОВЫЕ ДАННЫЕ
+        const SUPABASE_URL = 'https://gkwlcxrbnonzvyfojvji.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_8DLY4OsDRN8bhfAuKjc89w_Mp69vgyY';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let currentEmail = '';
@@ -138,7 +139,7 @@
 
             errorMsg.classList.remove('show');
             
-            // 1. СРАЗУ ПОЛУЧАЕМ ТОКЕН КАПЧИ (Он нужен для обоих действий)
+            // 1. СРАЗУ ПОЛУЧАЕМ ТОКЕН КАПЧИ
             const captchaToken = document.querySelector('[name="cf-turnstile-response"]').value;
             if (!captchaToken) {
                 errorMsg.innerText = 'Пожалуйста, пройдите проверку на робота.';
@@ -163,7 +164,7 @@
                 const { data, error } = await supabaseClient.auth.signInWithPassword({
                     email: email,
                     password: password,
-                    options: { captchaToken: captchaToken } // Передаем капчу
+                    options: { captchaToken: captchaToken }
                 });
 
                 if (error) {
@@ -176,7 +177,7 @@
                 } else {
                     document.getElementById('success-modal').classList.add('active');
                     setTimeout(() => {
-                        window.location.href = 'dashboard.html';
+                        window.location.href = '/dashboard'; // Изменено на чистый URL
                     }, 1500);
                 }
                 return;
@@ -187,7 +188,7 @@
                 email: email,
                 options: { 
                     shouldCreateUser: false,
-                    captchaToken: captchaToken // Передаем капчу и сюда!
+                    captchaToken: captchaToken
                 }
             });
 
@@ -244,7 +245,7 @@
 
                 document.getElementById('success-modal').classList.add('active');
                 setTimeout(() => {
-                    window.location.href = 'dashboard.html';
+                    window.location.href = '/dashboard'; // Изменено на чистый URL
                 }, 1500);
             }
         });
@@ -258,7 +259,7 @@
             document.getElementById('btn-login').disabled = false;
             document.getElementById('btn-text').innerText = 'Войти';
             document.getElementById('spinner').style.display = 'none';
-            if (window.turnstile) window.turnstile.reset(); // Сбрасываем капчу при возврате
+            if (window.turnstile) window.turnstile.reset(); 
         });
     </script>
 </body>
