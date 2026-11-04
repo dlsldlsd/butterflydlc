@@ -130,8 +130,9 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const SUPABASE_URL = 'https://kkdpwgndorwibvqabvrw.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_wIvuDu1iHn7sPfa1ojhiQA_gxF6acmX';
+        // ВСТАВЛЕНЫ ТВОИ НОВЫЕ ДАННЫЕ
+        const SUPABASE_URL = 'https://gkwlcxrbnonzvyfojvji.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_8DLY4OsDRN8bhfAuKjc89w_Mp69vgyY';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let currentEmail = '';
@@ -206,7 +207,7 @@
             }
         });
 
-        // 5. Проверка кода Reauth (ИСПРАВЛЕНО НА updateUser)
+        // 5. Проверка кода Reauth
         document.getElementById('verify-delete-btn').addEventListener('click', async () => {
             const code = document.getElementById('delete-otp-code').value.trim();
             const btn = document.getElementById('verify-delete-btn');
