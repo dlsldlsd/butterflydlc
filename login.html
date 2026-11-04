@@ -6,7 +6,6 @@
     <title>Вход — Butterfly DLC</title>
     <link rel="icon" type="image/png" href="logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     
     <style>
         :root { --bg: #0f0f13; --card-bg: #1a1a22; --text: #ffffff; --text-dim: #a0a0b0; --accent: #8b5cf6; --accent-hover: #7c3aed; --border: #2a2a35; --error: #ef4444; --success: #10b981; }
@@ -20,7 +19,6 @@
         .input-group input { width: 100%; padding: 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-family: 'Montserrat', sans-serif; font-size: 14px; transition: 0.3s; }
         .input-group input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 10px rgba(139, 92, 246, 0.2); }
         .otp-input { font-size: 28px !important; letter-spacing: 10px; text-align: center; color: var(--accent) !important; font-weight: 800; padding: 15px 10px !important; }
-        .cf-turnstile { display: flex; justify-content: center; margin: 20px 0; }
         .btn-submit { width: 100%; padding: 14px; border-radius: 8px; background: var(--accent); color: #fff; border: none; font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 16px; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3); display: flex; justify-content: center; align-items: center; gap: 10px; }
         .btn-submit:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-2px); }
         .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
@@ -61,7 +59,7 @@
                     <input type="password" id="password" placeholder="••••••••" required>
                 </div>
 
-                <div class="cf-turnstile" data-sitekey="0x4AAAAAAFyCFRaexblhfbXL" data-theme="dark"></div>
+                <!-- КАПЧА УБРАНА -->
 
                 <div class="error-msg" id="error-msg">Неверный email или пароль.</div>
 
@@ -109,7 +107,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // ВСТАВЛЕНЫ ТВОИ НОВЫЕ ДАННЫЕ
         const SUPABASE_URL = 'https://gkwlcxrbnonzvyfojvji.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_8DLY4OsDRN8bhfAuKjc89w_Mp69vgyY';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -139,14 +136,6 @@
 
             errorMsg.classList.remove('show');
             
-            // 1. СРАЗУ ПОЛУЧАЕМ ТОКЕН КАПЧИ
-            const captchaToken = document.querySelector('[name="cf-turnstile-response"]').value;
-            if (!captchaToken) {
-                errorMsg.innerText = 'Пожалуйста, пройдите проверку на робота.';
-                errorMsg.classList.add('show');
-                return;
-            }
-
             btnText.innerText = 'Проверка...';
             spinner.style.display = 'block';
             btn.disabled = true;
@@ -163,8 +152,7 @@
                 
                 const { data, error } = await supabaseClient.auth.signInWithPassword({
                     email: email,
-                    password: password,
-                    options: { captchaToken: captchaToken }
+                    password: password
                 });
 
                 if (error) {
@@ -173,11 +161,10 @@
                     btnText.innerText = 'Войти';
                     spinner.style.display = 'none';
                     btn.disabled = false;
-                    if (window.turnstile) window.turnstile.reset();
                 } else {
                     document.getElementById('success-modal').classList.add('active');
                     setTimeout(() => {
-                        window.location.href = '/dashboard'; // Изменено на чистый URL
+                        window.location.href = '/dashboard';
                     }, 1500);
                 }
                 return;
@@ -186,10 +173,7 @@
             // 4. Если IP новый — отправляем код на почту
             const { error } = await supabaseClient.auth.signInWithOtp({
                 email: email,
-                options: { 
-                    shouldCreateUser: false,
-                    captchaToken: captchaToken
-                }
+                options: { shouldCreateUser: false }
             });
 
             if (error) {
@@ -198,7 +182,6 @@
                 btnText.innerText = 'Войти';
                 spinner.style.display = 'none';
                 btn.disabled = false;
-                if (window.turnstile) window.turnstile.reset();
             } else {
                 // Переключаем на ввод кода
                 document.getElementById('user-email-display').innerText = email;
@@ -245,7 +228,7 @@
 
                 document.getElementById('success-modal').classList.add('active');
                 setTimeout(() => {
-                    window.location.href = '/dashboard'; // Изменено на чистый URL
+                    window.location.href = '/dashboard';
                 }, 1500);
             }
         });
@@ -259,7 +242,6 @@
             document.getElementById('btn-login').disabled = false;
             document.getElementById('btn-text').innerText = 'Войти';
             document.getElementById('spinner').style.display = 'none';
-            if (window.turnstile) window.turnstile.reset(); 
         });
     </script>
 </body>
