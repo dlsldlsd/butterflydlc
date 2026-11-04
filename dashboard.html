@@ -130,7 +130,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // ВСТАВЛЕНЫ ТВОИ НОВЫЕ ДАННЫЕ
         const SUPABASE_URL = 'https://gkwlcxrbnonzvyfojvji.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_8DLY4OsDRN8bhfAuKjc89w_Mp69vgyY';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -140,10 +139,20 @@
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-        // 1. Проверка входа и ЗАГРУЗКА ПОДПИСКИ ИЗ БАЗЫ
+        // ДИАГНОСТИКА ВХОДА
         async function checkUser() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (!session) { window.location.href = '/login'; return; }
+            const { data: { session }, error } = await supabaseClient.auth.getSession();
+            
+            // Выводим данные в консоль, чтобы понять, что происходит
+            console.log("Проверка сессии:", session);
+            if (error) console.error("Ошибка сессии:", error);
+
+            if (!session) { 
+                // Если сессии нет, выводим алерт и кидаем на вход
+                alert("Сессия не найдена. Пожалуйста, войдите заново. (Если только что вошли, убедитесь, что вы на том же домене: без www или с www)");
+                window.location.href = '/login'; 
+                return; 
+            }
 
             const user = session.user;
             currentEmail = user.email;
@@ -152,21 +161,25 @@
             document.getElementById('user-id').innerText = 'ID: ' + user.id.split('-')[0] + '...';
 
             // ДЕЛАЕМ ЗАПРОС К ТАБЛИЦЕ PROFILES
-            const { data: profile, error } = await supabaseClient
+            const { data: profile, error: profileError } = await supabaseClient
                 .from('profiles')
                 .select('subscription, subscription_end')
                 .eq('email', currentEmail)
                 .maybeSingle();
 
+            if (profileError) {
+                console.error("Ошибка загрузки профиля:", profileError);
+                alert("Ошибка при чтении профиля: " + profileError.message + ". Возможно, отключен RLS в таблице profiles.");
+            }
+
             if (profile && profile.subscription === 'active') {
                 let isActive = true;
                 
-                // Проверяем дату окончания, если она есть
                 if (profile.subscription_end) {
                     const endDate = new Date(profile.subscription_end);
                     const now = new Date();
                     if (endDate < now) {
-                        isActive = false; // Подписка истекла
+                        isActive = false;
                     }
                 }
 
@@ -177,7 +190,7 @@
                     const dl = document.getElementById('download-btn');
                     dl.innerText = '⬇️ Скачать лоадер';
                     dl.className = 'btn-download active';
-                    dl.href = '#'; // ЗДЕСЬ МОЖЕШЬ УКАЗАТЬ ПРЯМУЮ ССЫЛКУ НА СКАЧИВАНИЕ ФАЙЛА
+                    dl.href = '#'; // СЮДА ВСТАВЬ ССЫЛКУ НА ФАЙЛ
                 } else {
                     document.getElementById('sub-status').innerText = 'Не активна (Истекла)';
                     document.getElementById('sub-status').className = 'status-value status-inactive';
@@ -185,29 +198,20 @@
             }
         }
 
-        // 2. Открытие окна выхода
-        document.getElementById('open-logout-btn').addEventListener('click', () => {
-            openModal('logout-modal');
-        });
+        document.getElementById('open-logout-btn').addEventListener('click', () => { openModal('logout-modal'); });
 
-        // 3. Кнопка "Выйти"
         document.getElementById('confirm-logout-btn').addEventListener('click', async () => {
             await supabaseClient.auth.signOut();
             window.location.href = '/';
         });
 
-        // 4. Кнопка "Удалить аккаунт" (Запуск Reauth)
         document.getElementById('start-delete-btn').addEventListener('click', async () => {
             closeModal('logout-modal');
             const { error } = await supabaseClient.auth.reauthenticate();
-            if (error) {
-                alert("Ошибка отправки кода: " + error.message);
-            } else {
-                openModal('reauth-modal');
-            }
+            if (error) { alert("Ошибка отправки кода: " + error.message); } 
+            else { openModal('reauth-modal'); }
         });
 
-        // 5. Проверка кода Reauth
         document.getElementById('verify-delete-btn').addEventListener('click', async () => {
             const code = document.getElementById('delete-otp-code').value.trim();
             const btn = document.getElementById('verify-delete-btn');
@@ -216,9 +220,7 @@
             btn.innerText = 'Проверка...';
             btn.disabled = true;
 
-            const { data, error } = await supabaseClient.auth.updateUser({
-                nonce: code 
-            });
+            const { data, error } = await supabaseClient.auth.updateUser({ nonce: code });
 
             if (error) {
                 alert("Неверный код: " + error.message);
@@ -231,7 +233,6 @@
             }
         });
 
-        // 6. Таймер на 5 секунд
         function startDeleteTimer() {
             const btn = document.getElementById('final-delete-btn');
             let timeLeft = 5;
@@ -240,23 +241,15 @@
 
             const interval = setInterval(() => {
                 timeLeft--;
-                if (timeLeft > 0) {
-                    btn.innerText = `Удалить (${timeLeft})`;
-                } else {
-                    clearInterval(interval);
-                    btn.innerText = 'Удалить навсегда';
-                    btn.disabled = false;
-                }
+                if (timeLeft > 0) { btn.innerText = `Удалить (${timeLeft})`; } 
+                else { clearInterval(interval); btn.innerText = 'Удалить навсегда'; btn.disabled = false; }
             }, 1000);
         }
 
-        // 7. Финальное удаление (Вызов Edge Function)
         document.getElementById('final-delete-btn').addEventListener('click', async () => {
             const btn = document.getElementById('final-delete-btn');
             btn.innerText = 'Удаление...';
-            
             const { data, error } = await supabaseClient.functions.invoke('delete-user');
-            
             if (error) {
                 alert("Ошибка при удалении: " + error.message);
                 btn.innerText = 'Удалить навсегда';
